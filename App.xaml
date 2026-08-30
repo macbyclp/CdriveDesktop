@@ -1,0 +1,8 @@
+<Application x:Class="CdriveDesktop.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- StartupUri BİLEREK YOK: pencereyi App.OnStartup elle kuruyor, çünkü tepsi
+         kipinde (komut satırı bayrağıyla) açıldığında pencerenin hiç gösterilmemesi
+         ve tepsi ikonunun pencereden önce var olması gerekiyor. -->
+    <Application.Resources />
+</Application>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Cdrive MSIX paket bildirimi.
+
+  Publisher, imzalayan sertifikanın konusuyla BİREBİR aynı olmak zorunda
+  (CN=MACBYMAC, O=MACBYMAC, C=TR) — bir harf farkı bile imzayı geçersiz kılar
+  ve paket kurulmaz.
+
+  Bu ilk aşamada modern sağ-tık menüsü (COM tabanlı IExplorerCommand) HENÜZ YOK;
+  önce imzalama + kurulum zincirinin bu makinede çalıştığı doğrulanıyor. Dosya
+  türü ilişkilendirmesi ("Birlikte aç" listesinde görünme) ise MSIX'in kendi
+  bildirim mekanizmasıyla burada tanımlı.
+-->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap uap3 rescap">
+
+  <Identity
+    Name="MACBYMAC.Cdrive"
+    Publisher="CN=MACBYMAC, O=MACBYMAC, C=TR"
+    Version="1.1.0.0"
+    ProcessorArchitecture="x64" />
+
+  <Properties>
+    <DisplayName>Cdrive</DisplayName>
+    <PublisherDisplayName>MACBYMAC</PublisherDisplayName>
+    <Description>Cdrive kurumsal dosya yönetimi</Description>
+    <Logo>Assets\StoreLogo.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <!-- 10.0.17763 = Windows 10 1809; win32 uygulamayı paketlemek (fullTrust) için asgari. -->
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="tr-TR" />
+    <Resource Language="en-US" />
+  </Resources>
+
+  <Capabilities>
+    <!-- Paketlenmiş bir win32 uygulaması: kum havuzunda değil, tam yetkiyle çalışır.
+         Cdrive'ın kullanıcının seçtiği dosyaları okuyup yüklemesi için gerekli. -->
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+
+  <Applications>
+    <Application Id="Cdrive" Executable="Cdrive.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="Cdrive"
+        Description="Cdrive kurumsal dosya yönetimi"
+        BackgroundColor="transparent"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
+      </uap:VisualElements>
+
+      <Extensions>
+        <!-- "Birlikte aç" listesinde görünsün. MSI'daki HKCR SupportedTypes'ın
+             MSIX karşılığı. Varsayılan uygulamayı DEĞİŞTİRMEZ; sadece seçenek ekler. -->
+        <uap3:Extension Category="windows.fileTypeAssociation">
+          <uap3:FileTypeAssociation Name="cdrivebelgeleri" Parameters="&quot;%1&quot;">
+            <uap:DisplayName>Cdrive'da aç</uap:DisplayName>
+            <uap:SupportedFileTypes>
+              <uap:FileType>.xlsx</uap:FileType>
+              <uap:FileType>.xls</uap:FileType>
+              <uap:FileType>.docx</uap:FileType>
+              <uap:FileType>.doc</uap:FileType>
+              <uap:FileType>.pptx</uap:FileType>
+              <uap:FileType>.ppt</uap:FileType>
+              <uap:FileType>.pdf</uap:FileType>
+              <uap:FileType>.csv</uap:FileType>
+              <uap:FileType>.txt</uap:FileType>
+            </uap:SupportedFileTypes>
+          </uap3:FileTypeAssociation>
+        </uap3:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+</Package>

@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Cdrive masaüstü uygulamasının MSI kurulum paketi.
+
+  Neden MSI: kurumsal dağıtıma uygun (grup ilkesi/Intune ile sessiz kurulabilir),
+  Program Ekle/Kaldır'da düzgün görünür, kaldırma işini Windows yönetir.
+
+  Sessiz kurulum:   msiexec /i Cdrive-Setup.msi /qn
+  Sessiz kaldırma:  msiexec /x Cdrive-Setup.msi /qn
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+
+  <Package Name="Cdrive"
+           Manufacturer="MACBYMAC"
+           Version="$(Version)"
+           UpgradeCode="8b1f4a2e-6c93-4d57-9a21-7f0e5c3b8d64"
+           Scope="perMachine"
+           Compressed="yes"
+           Language="1055"
+           Codepage="1254">
+
+    <!-- Language 1055 = Türkçe (yerleşik MSI arayüz metinleri Türkçe gelsin).
+         Codepage 1254 = Türkçe ANSI — varsayılan 1252'de "ş/ğ/İ" gibi harfler
+         yok ve derleme hata veriyor. -->
+    <SummaryInformation Codepage="1254"
+                        Description="Cdrive kurumsal dosya yonetimi - masaustu uygulamasi" />
+
+    <!-- Aynı UpgradeCode'lu eski sürüm varsa önce onu kaldırıp yenisini kurar.
+         Böylece "güncelleme" için elle kaldırma gerekmez. -->
+    <MajorUpgrade DowngradeErrorMessage="Cdrive'ın daha yeni bir sürümü zaten kurulu. Güncellemek için önce onu kaldırın." />
+
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <!-- Program Ekle/Kaldır görünümü -->
+    <Icon Id="CdriveIcon" SourceFile="$(AppDir)\..\Assets\cdrive.ico" />
+    <Property Id="ARPPRODUCTICON" Value="CdriveIcon" />
+    <Property Id="ARPNOREPAIR" Value="1" />
+    <Property Id="ARPHELPLINK" Value="https://cdrive.calapverdi.tr" />
+    <!-- Program Ekle/Kaldir'da "kurulum konumu" boş görünmesin diye INSTALLFOLDER
+         çözümlendikten SONRA ayarlanıyor (doğrudan Property olarak verilirse boş kalır). -->
+    <SetProperty Id="ARPINSTALLLOCATION" Value="[INSTALLFOLDER]" After="CostFinalize" />
+
+    <!-- Kurulum sırasında uygulama açıksa dosyalar kilitli olur ve Windows yeniden
+         başlatma ister. Bunu önlemek için önce çalışan kopyayı kapatıyoruz. -->
+    <util:CloseApplication Id="CloseCdrive"
+                           Target="Cdrive.exe"
+                           CloseMessage="yes"
+                           RebootPrompt="no"
+                           PromptToContinue="no" />
+
+    <StandardDirectory Id="ProgramFiles6432Folder">
+      <Directory Id="INSTALLFOLDER" Name="Cdrive" />
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="AppShortcutFolder" Name="Cdrive" />
+    </StandardDirectory>
+
+    <!-- Uygulamanın tüm dosyaları (bağımsız yayın: .NET çalışma zamanı dahil,
+         hedef makinede ön koşul yok). -->
+    <ComponentGroup Id="AppFiles" Directory="INSTALLFOLDER">
+      <Files Include="$(AppDir)\**" />
+    </ComponentGroup>
+
+    <!-- Başlat menüsü kısayolu -->
+    <ComponentGroup Id="Shortcuts" Directory="AppShortcutFolder">
+      <Component Id="StartMenuShortcut" Guid="3d7c9e15-42ab-4f80-b6d3-1e9a705c4f28">
+        <Shortcut Id="CdriveStartMenu"
+                  Name="Cdrive"
+                  Description="Cdrive kurumsal dosya yönetimi"
+                  Target="[INSTALLFOLDER]Cdrive.exe"
+                  WorkingDirectory="INSTALLFOLDER" />
+        <RemoveFolder Id="RemoveAppShortcutFolder" Directory="AppShortcutFolder" On="uninstall" />
+        <!-- perMachine kurulumda bile kısayol bileşeninin anahtar yolu HKCU olmalı
+             (Windows Installer bileşen kuralı); yoksa ICE hataları çıkar. -->
+        <RegistryValue Root="HKCU" Key="Software\MACBYMAC\Cdrive" Name="StartMenu" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- Masaüstü kısayolu — isteğe bağlı, varsayılan AÇIK.
+         Sessiz kurulumda kapatmak için: msiexec /i ... DESKTOPSHORTCUT=0 /qn -->
+    <Property Id="DESKTOPSHORTCUT" Value="1" />
+    <StandardDirectory Id="DesktopFolder">
+      <Component Id="DesktopShortcut" Guid="a41e83b7-05fd-4c26-8e19-cb27d6a0f593" Condition="DESKTOPSHORTCUT = 1">
+        <Shortcut Id="CdriveDesktop"
+                  Name="Cdrive"
+                  Description="Cdrive kurumsal dosya yönetimi"
+                  Target="[INSTALLFOLDER]Cdrive.exe"
+                  WorkingDirectory="INSTALLFOLDER" />
+        <RegistryValue Root="HKCU" Key="Software\MACBYMAC\Cdrive" Name="Desktop" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </StandardDirectory>
+
+    <!-- ================= Explorer entegrasyonu =================
+      İki şey kaydediliyor:
+
+      1) "Birlikte aç" listesinde Cdrive görünsün — Applications\Cdrive.exe altına
+         open komutu + SupportedTypes. Windows bu uzantılar için Cdrive'ı önerir;
+         VARSAYILAN uygulamayı DEĞİŞTİRMEZ (kullanıcının .xlsx'i hâlâ Excel'de açılır),
+         sadece seçenek olarak eklenir. Varsayılanı zorla değiştirmek saygısızlık olurdu.
+
+      2) Her dosyaya sağ tıkta "Cdrive'a yükle" — HKCR\*\shell altında.
+
+      NOT (Windows 11): Yeni kısa sağ-tık menüsü yalnızca paketlenmiş (MSIX+COM)
+      uygulamaların girdilerini gösteriyor. Buradaki klasik girdi Windows 11'de
+      "Daha fazla seçenek göster" (Shift+F10) menüsünde çıkar. Windows 10'da
+      doğrudan ana menüde görünür.
+    -->
+    <ComponentGroup Id="ShellIntegration" Directory="INSTALLFOLDER">
+      <Component Id="OpenWithRegistration" Guid="7e2a9c41-8b6d-4f13-95c8-2a4de07b1f36">
+        <RegistryKey Root="HKCR" Key="Applications\Cdrive.exe">
+          <RegistryValue Name="FriendlyAppName" Type="string" Value="Cdrive" />
+          <RegistryKey Key="shell\open">
+            <RegistryValue Name="FriendlyAppName" Type="string" Value="Cdrive'da aç" />
+            <RegistryKey Key="command">
+              <RegistryValue Type="string" Value="&quot;[INSTALLFOLDER]Cdrive.exe&quot; &quot;%1&quot;" />
+            </RegistryKey>
+          </RegistryKey>
+          <!-- Bu uzantılarda "Birlikte aç" listesinde önerilsin. Cdrive bunları
+               kendi düzenleyicisinde (OnlyOffice) açabiliyor. -->
+          <RegistryKey Key="SupportedTypes">
+            <RegistryValue Name=".xlsx" Type="string" Value="" />
+            <RegistryValue Name=".xls" Type="string" Value="" />
+            <RegistryValue Name=".docx" Type="string" Value="" />
+            <RegistryValue Name=".doc" Type="string" Value="" />
+            <RegistryValue Name=".pptx" Type="string" Value="" />
+            <RegistryValue Name=".ppt" Type="string" Value="" />
+            <RegistryValue Name=".pdf" Type="string" Value="" />
+            <RegistryValue Name=".csv" Type="string" Value="" />
+            <RegistryValue Name=".txt" Type="string" Value="" />
+          </RegistryKey>
+        </RegistryKey>
+      </Component>
+
+      <Component Id="UploadContextMenu" Guid="c5b81d90-3f47-4a62-8d05-9b6e1c73af28">
+        <!-- `*` = her dosya türü -->
+        <RegistryKey Root="HKCR" Key="*\shell\CdriveUpload">
+          <RegistryValue Type="string" Value="Cdrive'a yükle" />
+          <RegistryValue Name="Icon" Type="string" Value="&quot;[INSTALLFOLDER]Cdrive.exe&quot;,0" />
+          <RegistryKey Key="command">
+            <RegistryValue Type="string" Value="&quot;[INSTALLFOLDER]Cdrive.exe&quot; --upload &quot;%1&quot;" />
+          </RegistryKey>
+        </RegistryKey>
+      </Component>
+    </ComponentGroup>
+
+    <Feature Id="Main" Title="Cdrive" Level="1">
+      <ComponentGroupRef Id="AppFiles" />
+      <ComponentGroupRef Id="Shortcuts" />
+      <ComponentGroupRef Id="ShellIntegration" />
+      <ComponentRef Id="DesktopShortcut" />
+    </Feature>
+
+    <!-- ================= Kurulum sihirbazı ================= -->
+    <!--
+      WixUI_InstallDir: Karşılama -> Kurulum klasörü -> Kuruluma hazır -> İlerleme -> Bitti.
+      Lisans sözleşmesi adımı BİLEREK atlanıyor (aşağıdaki iki Publish satırı):
+      bu kurum içi bir uygulama, uydurma bir hukuki metin koymanın anlamı yok.
+      Sessiz kurulumu (/qn) hiç etkilemez — orada arayüz zaten çalışmaz.
+    -->
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
+
+    <UI>
+      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="InstallDirDlg" Order="2" Condition="NOT Installed" />
+      <Publish Dialog="InstallDirDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg" Order="2" Condition="NOT Installed" />
+    </UI>
+
+    <!-- Markalı görseller (WiX BMP ister; installer/make-bmp ile üretiliyor). -->
+    <WixVariable Id="WixUIBannerBmp" Value="$(ImageDir)\banner.bmp" />
+    <WixVariable Id="WixUIDialogBmp" Value="$(ImageDir)\dialog.bmp" />
+
+    <!-- Kurulum bitince uygulamayı başlatma seçeneği sunmuyoruz: sessiz kurumsal
+         kurulumda (msiexec /qn) beklenmedik pencere açmak istemiyoruz. -->
+
+  </Package>
+</Wix>

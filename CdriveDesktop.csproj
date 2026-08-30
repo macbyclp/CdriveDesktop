@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <!-- Tepsi ikonu (NotifyIcon) ve balon bildirimi WinForms'tan geliyor. WPF'in
+         kendi tepsi desteği yok; üçüncü parti paket eklemek yerine .NET'in kendi
+         WinForms bileşenini kullanıyoruz — ek bağımlılık olmuyor. -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>Assets\cdrive.ico</ApplicationIcon>
+    <AssemblyName>Cdrive</AssemblyName>
+    <RootNamespace>CdriveDesktop</RootNamespace>
+    <Version>1.0.0</Version>
+    <Product>Cdrive</Product>
+    <Company>MACBYMAC</Company>
+    <!-- Tek dosya yayınlamada WebView2'nin yerel (native) dosyaları da pakete girsin. -->
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <SatelliteResourceLanguages>tr;en</SatelliteResourceLanguages>
+    <!-- Bağımlılıkların .xml (API dokümanı) ve .pdb dosyaları yayına girmesin —
+         çalışmaya katkıları yok, sadece dağıtımı şişiriyorlar. -->
+    <AllowedReferenceRelatedFileExtensions>none</AllowedReferenceRelatedFileExtensions>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4129.50" />
+  </ItemGroup>
+
+</Project>
