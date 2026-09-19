@@ -1,0 +1,16 @@
+{
+  "name": "cdrive-desktop",
+  "productName": "Cdrive",
+  "version": "1.0.0",
+  "description": "Cdrive masaüstü kabuğu (Linux) — sistem tepsisi, bildirimler, dosya yükleme",
+  "main": "src/main.js",
+  "private": true,
+  "author": "MACBYMAC",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0"
+  }
+}

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Cdrive — sunucu adresi</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<style>
+  body{margin:0;padding:20px;background:#0f1115;color:#e6e8ee;font-family:system-ui,sans-serif;display:flex;flex-direction:column;gap:12px}
+  label{font-size:14px}
+  input{padding:9px 10px;border-radius:8px;border:1px solid #2a2f3a;background:#171a21;color:inherit;font-size:14px}
+  .row{display:flex;gap:8px;justify-content:flex-end}
+  button{border:0;border-radius:8px;padding:8px 18px;font-size:14px;cursor:pointer;background:#2a2f3a;color:#e6e8ee}
+  button.ok{background:#6c63ff;color:#fff}
+</style>
+</head>
+<body>
+  <label for="v">Cdrive sunucu adresi:</label>
+  <input id="v" type="url" autofocus>
+  <div class="row"><button id="cancel">İptal</button><button id="ok" class="ok">Tamam</button></div>
+<script>
+  const input = document.getElementById('v');
+  input.value = new URLSearchParams(location.search).get('value') || '';
+  input.select();
+  const ok = () => window.cdrivePrompt.submit(input.value);
+  document.getElementById('ok').onclick = ok;
+  document.getElementById('cancel').onclick = () => window.cdrivePrompt.submit(null);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') ok(); if (e.key === 'Escape') window.cdrivePrompt.submit(null); });
+</script>
+</body>
+</html>

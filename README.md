@@ -1,4 +1,17 @@
-# Cdrive — Windows Masaüstü Uygulaması
+# Cdrive Desktop
+
+Cdrive'ın masaüstü kabuğu — **iki sürüm**:
+
+| Sürüm | Klasör | Teknoloji |
+|---|---|---|
+| **Windows** | bu klasör (kök) | WPF + WebView2 (.NET 10) |
+| **Linux** | [`linux/`](linux/README-linux.md) | Electron |
+
+Aşağıdaki bölümler Windows sürümünü anlatır; Linux için [`linux/README-linux.md`](linux/README-linux.md).
+
+---
+
+## Windows Masaüstü Uygulaması
 
 Cdrive'ı kendi penceresinde açan, sistem tepsisinde yaşayan ve yeni bildirim
 geldiğinde Windows bildirimi gösteren masaüstü kabuğu.

@@ -11,7 +11,8 @@
 
 param(
     [string]$Version = "1.1.0.0",
-    [string]$PfxPassword = "CdriveMsix2026"
+    # Sertifika parolası repoda tutulmaz: parametre ya da CDRIVE_PFX_PASSWORD ortam değişkeni.
+    [string]$PfxPassword = $env:CDRIVE_PFX_PASSWORD
 )
 
 $ErrorActionPreference = "Stop"
@@ -33,6 +34,7 @@ $pfx      = Join-Path $msixDir "cdrive-imza.pfx"
 $outMsix  = Join-Path $msixDir "Cdrive.msix"
 
 if (-not (Test-Path $pfx)) { throw "imza sertifikasi yok: $pfx" }
+if (-not $PfxPassword) { throw "Sertifika parolasi yok: -PfxPassword verin ya da CDRIVE_PFX_PASSWORD ayarlayin" }
 
 Write-Host "1/5  Testler kosuluyor..." -ForegroundColor Cyan
 dotnet build -c Release | Out-Null

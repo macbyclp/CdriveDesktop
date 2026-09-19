@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Cdrive</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<style>
+  html,body{height:100%;margin:0;background:#0f1115;color:#e6e8ee;font-family:system-ui,sans-serif}
+  main{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:24px;box-sizing:border-box}
+  h1{font-size:20px;margin:0}
+  p{margin:0;max-width:520px;color:#9aa3b2;line-height:1.5;word-break:break-word}
+  button{margin-top:8px;background:#6c63ff;color:#fff;border:0;border-radius:8px;padding:10px 20px;font-size:14px;cursor:pointer}
+</style>
+</head>
+<body>
+<main>
+  <h1>Sunucuya bağlanılamadı.</h1>
+  <p id="server"></p>
+  <p>İnternet bağlantını kontrol et. Sunucu adresi yanlışsa tepsi menüsünden değiştirebilirsin.</p>
+  <p id="reason"></p>
+  <button id="retry">Yeniden dene</button>
+</main>
+<script>
+  const q = new URLSearchParams(location.search);
+  document.getElementById('server').textContent = q.get('server') || '';
+  document.getElementById('reason').textContent = q.get('reason') ? '(' + q.get('reason') + ')' : '';
+  document.getElementById('retry').onclick = () => { location.href = q.get('server'); };
+</script>
+</body>
+</html>
