@@ -4,7 +4,7 @@
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         Title="Cdrive" Height="800" Width="1120"
         MinHeight="360" MinWidth="480"
-        Background="#0b0b0f"
+        Background="#08090c"
         WindowStartupLocation="CenterOwner">
     <Grid>
         <wv2:WebView2 x:Name="Web" />
@@ -12,7 +12,7 @@
         <!-- İndirme bilgisi: window.open ile açılan bağlantıların çoğu aslında bir
              indirme (dosya, klasör zip'i, fatura PDF'i). O durumda sayfa boş kalır;
              kullanıcı "boş pencere açıldı" sanmasın diye bu katman görünür. -->
-        <Border x:Name="DownloadPanel" Background="#0b0b0f" Visibility="Collapsed">
+        <Border x:Name="DownloadPanel" Background="#08090c" Visibility="Collapsed">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock x:Name="DownloadText" Text="İndiriliyor…" Foreground="#e5e7eb"
                            FontSize="15" HorizontalAlignment="Center" />

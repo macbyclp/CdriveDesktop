@@ -7,7 +7,7 @@
 # Uretilen: installer\Cdrive-Setup.msi  (bagimsiz — hedef makinede .NET gerekmez)
 
 param(
-    [string]$Version = "1.0.0",
+    [string]$Version = "1.1.0",
     # Bagimsiz (self-contained): .NET calisma zamani pakete dahil, hedef makinede
     # on kosul yok. $false yaparsan MSI kuculur ama hedefte .NET 10 Desktop
     # Runtime kurulu olmasi gerekir.
