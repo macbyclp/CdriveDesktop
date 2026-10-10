@@ -237,9 +237,18 @@ public partial class MainWindow : Window
         _tray.UpdateUnread(unread);
 
         if (!_settings.ShowNotifications) return;
+        // Yapay zekâ araçları (Claude Code, Codex…) sürücüye dosya yüklediğinde sunucu AI_UPLOAD bildirimi üretir;
+        // başlığı ayırt edilebilir yap. Toplu yüklemede (3'ten fazla yeni bildirim) balon yağmuru yerine tek özet göster.
+        if (fresh.Count > 3)
+        {
+            var ai = fresh.Count(i => i.Type == "AI_UPLOAD");
+            _tray.ShowNotification("Cdrive",
+                ai == fresh.Count ? $"Yapay zekâ sürücünüze {ai} dosya yükledi." : $"{fresh.Count} yeni bildiriminiz var.");
+            return;
+        }
         foreach (var item in fresh)
         {
-            _tray.ShowNotification("Cdrive", item.Message);
+            _tray.ShowNotification(item.Type == "AI_UPLOAD" ? "Cdrive — yapay zekâ dosya yükledi" : "Cdrive", item.Message);
         }
     }
 

@@ -22,7 +22,7 @@ public sealed class Settings
     public bool ShowNotifications { get; set; } = true;
 
     /// <summary>Bildirim yoklama aralığı (saniye). Çok küçük değer sunucuyu boşuna yorar.</summary>
-    public int PollSeconds { get; set; } = 60;
+    public int PollSeconds { get; set; } = 20; // yapay zekâ yüklemeleri gecikmeden duyurulsun diye 20 sn
 
     // Pencere konumu/boyutu — kapanışta yazılır, açılışta geri yüklenir.
     public double WindowWidth { get; set; } = 1280;
