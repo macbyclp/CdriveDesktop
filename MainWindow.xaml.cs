@@ -23,10 +23,29 @@ public partial class MainWindow : Window
         _tray = tray;
 
         RestoreWindowPlacement();
-        // Başlık çubuğu Windows'un vurgu rengini almasın, uygulamanın kendi
-        // koyu zeminiyle aynı olsun (bkz. WindowTheme).
-        WindowTheme.AttachDark(this);
+        // Başlık çubuğu Windows'un vurgu rengini almasın; web arayüzünün açık/koyu temasını
+        // izlesin (bkz. WindowTheme, ThemeBridge).
+        WindowTheme.Attach(this, PaintChrome);
         Loaded += async (_, _) => await InitializeWebViewAsync();
+    }
+
+    /// <summary>Karşılama ekranını ve WebView arka planını geçerli temaya boyar.</summary>
+    private void PaintChrome(bool dark)
+    {
+        var bg = WindowTheme.BackgroundHex(dark);
+        var fg = WindowTheme.ForegroundHex(dark);
+        Splash.Background = WindowTheme.Brush(bg);
+        SplashLogo.Background = WindowTheme.Brush(fg);
+        SplashLogoText.Foreground = WindowTheme.Brush(bg);
+        SplashText.Foreground = WindowTheme.Brush(dark ? "#a6abb5" : "#4a4f58");
+        SplashHint.Foreground = WindowTheme.Brush(dark ? "#7a808b" : "#767b85");
+        try
+        {
+            // Sayfa çizilmeden önceki ilk karelerde beyaz/yanlış renk parlaması olmasın.
+            var c = WindowTheme.ToMediaColor(bg);
+            Web.DefaultBackgroundColor = System.Drawing.Color.FromArgb(c.R, c.G, c.B);
+        }
+        catch { /* WebView henüz hazır değilse bir sonraki temada uygulanır */ }
     }
 
     // --- Pencere konumu ---
@@ -114,6 +133,9 @@ public partial class MainWindow : Window
             // içi gezinmelerde de kendini yeniden kurar.
             await core.AddScriptToExecuteOnDocumentCreatedAsync(
                 NotificationBridge.BuildPollerScript(_settings.PollSeconds, BasePathOf(_settings.ServerUrl)));
+
+            // Web arayüzünün açık/koyu temasını izleyip pencereyi ona göre boyar.
+            await core.AddScriptToExecuteOnDocumentCreatedAsync(ThemeBridge.Script);
 
             _webReady = true;
             core.Navigate(_settings.ServerUrl);
@@ -204,13 +226,29 @@ public partial class MainWindow : Window
         try { json = e.TryGetWebMessageAsString(); }
         catch { return; }
 
+        // Tema bildirimi: pencereyi boya; bildirim sayacına DOKUNMA (aşağıdaki Process bunu 0'a çeker).
+        if (ThemeBridge.TryParse(json, out var dark))
+        {
+            WindowTheme.SetTheme(dark);
+            return;
+        }
+
         var (fresh, unread) = NotificationBridge.Process(json);
         _tray.UpdateUnread(unread);
 
         if (!_settings.ShowNotifications) return;
+        // Yapay zekâ araçları (Claude Code, Codex…) sürücüye dosya yüklediğinde sunucu AI_UPLOAD bildirimi üretir;
+        // başlığı ayırt edilebilir yap. Toplu yüklemede (3'ten fazla yeni bildirim) balon yağmuru yerine tek özet göster.
+        if (fresh.Count > 3)
+        {
+            var ai = fresh.Count(i => i.Type == "AI_UPLOAD");
+            _tray.ShowNotification("Cdrive",
+                ai == fresh.Count ? $"Yapay zekâ sürücünüze {ai} dosya yükledi." : $"{fresh.Count} yeni bildiriminiz var.");
+            return;
+        }
         foreach (var item in fresh)
         {
-            _tray.ShowNotification("Cdrive", item.Message);
+            _tray.ShowNotification(item.Type == "AI_UPLOAD" ? "Cdrive — yapay zekâ dosya yükledi" : "Cdrive", item.Message);
         }
     }
 

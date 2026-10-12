@@ -26,7 +26,12 @@ public partial class PopupWindow : Window
     {
         InitializeComponent();
         _env = env;
-        WindowTheme.AttachDark(this);
+        WindowTheme.Attach(this, dark =>
+        {
+            DownloadPanel.Background = WindowTheme.Brush(WindowTheme.BackgroundHex(dark));
+            DownloadText.Foreground = WindowTheme.Brush(WindowTheme.ForegroundHex(dark));
+            DownloadName.Foreground = WindowTheme.Brush(dark ? "#a6abb5" : "#4a4f58");
+        });
     }
 
     public Microsoft.Web.WebView2.Wpf.WebView2 WebView => Web;

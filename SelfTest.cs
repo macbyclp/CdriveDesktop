@@ -32,6 +32,7 @@ public static class SelfTest
         TestBasePathParsing();
         TestNewWindowRouting();
         TestWindowTheme();
+        TestThemeBridge();
         TestCommandLineParsing();
         TestFileNameEncoding();
         TestApiErrorMessages();
@@ -221,6 +222,35 @@ public static class SelfTest
             WindowTheme.ToColorRef("0b0b0f") == WindowTheme.ToColorRef("#0b0b0f"));
         Check("siyah 0", WindowTheme.ToColorRef("#000000") == 0);
         Check("beyaz 0xFFFFFF", WindowTheme.ToColorRef("#ffffff") == 0xFFFFFF);
+    }
+
+    private static void TestThemeBridge()
+    {
+        Log.AppendLine("\n[tema köprüsü (Liquid Glass açık/koyu)]");
+        // Palet web uygulamasındaki (globals.css) zeminlerle aynı olmalı.
+        Check("koyu zemin web'le aynı (#08090c -> 0x0C0908)",
+            WindowTheme.ToColorRef(WindowTheme.DarkBackground) == 0x0C0908);
+        Check("açık zemin web'le aynı (#dadde4 -> 0xE4DDDA)",
+            WindowTheme.ToColorRef(WindowTheme.LightBackground) == 0xE4DDDA);
+        Check("tema seçimi doğru palete gidiyor",
+            WindowTheme.BackgroundHex(true) == WindowTheme.DarkBackground &&
+            WindowTheme.BackgroundHex(false) == WindowTheme.LightBackground &&
+            WindowTheme.ForegroundHex(true) == WindowTheme.DarkForeground &&
+            WindowTheme.ForegroundHex(false) == WindowTheme.LightForeground);
+
+        Check("betik data-theme özniteliğini izliyor",
+            ThemeBridge.Script.Contains("MutationObserver") && ThemeBridge.Script.Contains("data-theme"));
+        Check("betik tekrar enjekte edilince çoğalmıyor", ThemeBridge.Script.Contains("__cdriveThemeWatcher"));
+
+        Check("açık tema mesajı ayrıştırılıyor",
+            ThemeBridge.TryParse("{\"kind\":\"theme\",\"theme\":\"light\"}", out var d1) && !d1);
+        Check("koyu tema mesajı ayrıştırılıyor",
+            ThemeBridge.TryParse("{\"kind\":\"theme\",\"theme\":\"dark\"}", out var d2) && d2);
+        Check("bilinmeyen tema koyuya düşüyor",
+            ThemeBridge.TryParse("{\"kind\":\"theme\",\"theme\":\"x\"}", out var d3) && d3);
+        Check("bildirim mesajı tema SAYILMIYOR (sayaç sıfırlanmasın)",
+            !ThemeBridge.TryParse("{\"kind\":\"notifications\",\"items\":[]}", out _));
+        Check("bozuk JSON çökmüyor", !ThemeBridge.TryParse("{bozuk", out _));
     }
 
     private static void TestNewWindowRouting()

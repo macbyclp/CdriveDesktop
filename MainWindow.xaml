@@ -4,7 +4,7 @@
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         Title="Cdrive" Height="860" Width="1280"
         MinHeight="480" MinWidth="720"
-        Background="#0b0b0f"
+        Background="#08090c"
         WindowStartupLocation="CenterScreen">
     <Grid>
         <wv2:WebView2 x:Name="Web" />
@@ -13,17 +13,14 @@
              uygulamanın donduğu izlenimini vermemek için üstünde marka rengiyle bir
              karşılama katmanı duruyor, sayfa gelince gizleniyor. Bağlantı hatasında
              da bu katman hatayı ve "Yeniden dene" düğmesini gösteriyor. -->
-        <Border x:Name="Splash" Background="#0b0b0f">
+        <Border x:Name="Splash" Background="#08090c">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Border Width="72" Height="72" CornerRadius="16" HorizontalAlignment="Center">
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                            <GradientStop Color="#4f46e5" Offset="0" />
-                            <GradientStop Color="#a78bfa" Offset="1" />
-                        </LinearGradientBrush>
-                    </Border.Background>
-                    <TextBlock Text="C" Foreground="White" FontSize="38" FontWeight="Bold"
-                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <!-- Marka işareti: Liquid Glass'ın nötr paleti (koyu temada açık zemin / koyu "C";
+                     açık temada tersi). Renkleri kod tarafında tema değiştikçe güncellenir. -->
+                <Border x:Name="SplashLogo" Width="72" Height="72" CornerRadius="20"
+                        HorizontalAlignment="Center" Background="#f3f4f6">
+                    <TextBlock x:Name="SplashLogoText" Text="C" Foreground="#08090c" FontSize="38"
+                               FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Border>
                 <TextBlock x:Name="SplashText" Text="Cdrive açılıyor…" Foreground="#9ca3af"
                            FontSize="14" Margin="0,18,0,0" HorizontalAlignment="Center" />

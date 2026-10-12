@@ -6,3 +6,4 @@ publish/
 *.msix
 *.pfx
 node_modules/
+app/
